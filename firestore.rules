@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /cards/{cardId} {
+      allow read, write: if true;
+      match /ratings/{ratingId} {
+        allow read, write: if true;
+      }
+    }
+    // Optionally, you can add a counter collection for rating counts
+    match /reviewCounts/{cardId} {
+      allow read, write: if true;
+    }
+  }
+} 
