@@ -271,7 +271,7 @@ function App() {
                 Community Feedback Platform
               </h2>
               <p className="text-lg transition-colors duration-300 text-gray-300">
-                Share topics for anonymous feedback. Your ratings stay 100% private.
+                Share topics for anonymous ratings. Your ratings stay 100% private.
               </p>
             </div>
             <SearchBar 
