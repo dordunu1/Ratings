@@ -28,7 +28,24 @@ const Header: React.FC<HeaderProps> = ({ onCreateCard, totalCards }) => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <ConnectButton showBalance={false} />
+            <ConnectButton.Custom>
+              {({ account, chain, openConnectModal, authenticationStatus, mounted }) => {
+                const ready = mounted && authenticationStatus !== 'loading';
+                const connected = ready && account && chain && (authenticationStatus === undefined || authenticationStatus === 'authenticated');
+                if (!connected) {
+                  return (
+                    <button
+                      onClick={openConnectModal}
+                      type="button"
+                      className="px-6 py-2 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-lg text-lg shadow transition-colors duration-200"
+                    >
+                      Connect Wallet
+                    </button>
+                  );
+                }
+                return <></>; // fallback to default for connected state
+              }}
+            </ConnectButton.Custom>
             {isConnected && (
               <button
                 onClick={onCreateCard}
