@@ -9,7 +9,9 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onCreateCard, totalCards }) => {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
+  // Helper to shorten address
+  const shortenAddress = (addr: string) => addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '';
   return (
     <header className="backdrop-blur-md shadow-sm border-b transition-colors duration-300 bg-black/80 border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -31,7 +33,9 @@ const Header: React.FC<HeaderProps> = ({ onCreateCard, totalCards }) => {
             <ConnectButton.Custom>
               {({ account, chain, openConnectModal, authenticationStatus, mounted }) => {
                 const ready = mounted && authenticationStatus !== 'loading';
-                const connected = ready && account && chain && (authenticationStatus === undefined || authenticationStatus === 'authenticated');
+                const connected =
+                  ready && account && chain &&
+                  (authenticationStatus === undefined || authenticationStatus === 'authenticated');
                 if (!connected) {
                   return (
                     <button
@@ -43,7 +47,8 @@ const Header: React.FC<HeaderProps> = ({ onCreateCard, totalCards }) => {
                     </button>
                   );
                 }
-                return <></>; // fallback to default for connected state
+                // Fallback to default ConnectButton for connected state
+                return <ConnectButton />;
               }}
             </ConnectButton.Custom>
             {isConnected && (
