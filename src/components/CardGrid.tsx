@@ -5,9 +5,35 @@ import Card from './Card';
 interface CardGridProps {
   cards: ReviewCard[];
   onCardClick: (card: ReviewCard) => void;
+  loading?: boolean;
 }
 
-const CardGrid: React.FC<CardGridProps> = ({ cards, onCardClick }) => {
+const SkeletonCard: React.FC = () => (
+  <div className="relative backdrop-blur-md rounded-xl shadow-lg border group overflow-hidden bg-white/10 border-white/20 animate-pulse">
+    <div className="p-6">
+      <div className="h-6 w-1/2 bg-gray-700 rounded mb-4"></div>
+      <div className="h-4 w-3/4 bg-gray-800 rounded mb-2"></div>
+      <div className="h-4 w-2/3 bg-gray-800 rounded mb-6"></div>
+      <div className="flex items-center space-x-2 mb-2">
+        <div className="h-6 w-24 bg-gray-700 rounded"></div>
+        <div className="h-6 w-6 bg-gray-700 rounded-full"></div>
+      </div>
+      <div className="h-4 w-1/3 bg-gray-700 rounded"></div>
+    </div>
+  </div>
+);
+
+const CardGrid: React.FC<CardGridProps> = ({ cards, onCardClick, loading }) => {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    );
+  }
+
   if (cards.length === 0) {
     return (
       <div className="text-center py-12">
@@ -28,9 +54,9 @@ const CardGrid: React.FC<CardGridProps> = ({ cards, onCardClick }) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {cards.map((card) => (
+      {cards.map((card, idx) => (
         <Card
-          key={card.docId}
+          key={card.id || idx}
           card={card}
           onClick={() => onCardClick(card)}
         />

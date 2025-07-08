@@ -39,15 +39,38 @@ function App() {
   const [hasVoted, setHasVoted] = useState(false);
   // Add a flag to indicate relayer is down (since decryption is disabled)
   const relayerDown = true;
+  const [isFheReady, setIsFheReady] = useState(false);
+  const [isCardsLoading, setIsCardsLoading] = useState(true);
 
   useEffect(() => {
-    initializeFheInstance();
+    const initAndFetch = async () => {
+      await initializeFheInstance();
+      setIsFheReady(true);
+      await fetchCards();
+    };
+    initAndFetch();
   }, []);
 
   // Fetch cards on mount and after creation
   const fetchCards = async () => {
+    setIsCardsLoading(true);
     const all = await getAllCards();
-    
+    // Fetch totalReviews for each card immediately
+    const cardsWithCounts = await Promise.all(
+      (all as any[]).filter(card => card.docId && card.title && card.createdAt).map(async card => {
+        const totalReviews = (card.id !== undefined) ? await getRatingCount(card.id) : 0;
+        return {
+          ...card,
+          totalReviews,
+          averageRating: 0,
+          isDecrypting: true,
+          decryptionError: false,
+        };
+      })
+    );
+    setCards(cardsWithCounts);
+    setIsCardsLoading(false);
+
     // Create contract instance for decryption
     let contract: any = null;
     try {
@@ -58,42 +81,43 @@ function App() {
     } catch (error) {
       console.error('Error creating contract instance:', error);
     }
-    
-    // Fetch review count and decrypted stats for each card in parallel
-    const cardsWithStats = await Promise.all(
-      (all as any[]).filter(card => card.docId && card.title && card.createdAt).map(async card => {
-        const totalReviews = (card.id !== undefined) ? await getRatingCount(card.id) : 0;
 
-        let averageRating = 0;
-        let isDecrypting = false;
-        if (card.id !== undefined && contract) {
-          try {
-            isDecrypting = true;
-            const stats = await getDecryptedStats(parseInt(card.id), contract);
-            averageRating = stats.average;
+    // For each card, decrypt stats in the background
+    cardsWithCounts.forEach(async (card, idx) => {
+      let averageRating = 0;
+      let isDecrypting = false;
+      let decryptionError = false;
+      if (card.id !== undefined && contract) {
+        try {
+          isDecrypting = true;
+          const encryptedStats = await contract.getEncryptedStats(parseInt(card.id));
+          console.log('Decrypting for cardId:', card.id, 'handles:', encryptedStats);
+          const stats = await getDecryptedStats(parseInt(card.id), contract);
+          averageRating = stats.average;
+          isDecrypting = false;
+        } catch (error: any) {
+          if (error?.message?.includes('Decryption service is temporarily unavailable') || error?.message?.includes('Failed to fetch')) {
             isDecrypting = false;
-          } catch (error: any) {
-            // If relayer is down, keep isDecrypting true
-            if (error?.message?.includes('Decryption service is temporarily unavailable') || error?.message?.includes('Failed to fetch')) {
-              isDecrypting = true;
-            } else {
-              isDecrypting = false;
-            }
-            averageRating = 0;
+            decryptionError = true;
+          } else {
+            isDecrypting = false;
+            decryptionError = true;
           }
+          averageRating = 0;
         }
-
-        return { 
-          ...card, 
-          totalReviews,
+      }
+      setCards(prevCards => {
+        const updated = [...prevCards];
+        updated[idx] = {
+          ...updated[idx],
           averageRating,
-          isDecrypting
+          isDecrypting,
+          decryptionError,
         };
-      })
-    );
-    setCards(cardsWithStats);
+        return updated;
+      });
+    });
   };
-  useEffect(() => { fetchCards(); }, []);
 
   // Fetch creation fee from contract
   useEffect(() => {
@@ -287,6 +311,7 @@ function App() {
             setSelectedCard(card);
             setIsReviewModalOpen(true);
           }}
+          loading={isCardsLoading}
         />
         <CreateCardModal
           isOpen={isCreateModalOpen}
