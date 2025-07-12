@@ -90,7 +90,6 @@ function App() {
         try {
           isDecrypting = true;
           const encryptedStats = await contract.getEncryptedStats(parseInt(card.id));
-          console.log('Decrypting for cardId:', card.id, 'handles:', encryptedStats);
           const stats = await getDecryptedStats(parseInt(card.id), contract);
           averageRating = stats.average;
           isDecrypting = false;
@@ -239,9 +238,7 @@ function App() {
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(REVIEW_CONTRACT_ADDRESS, REVIEW_CONTRACT_ABI, signer);
       const tx = await contract.submitEncryptedRating(selectedCard.id, encryptedHex, proofHex, { gasLimit: 500000 });
-      console.log('Review TX:', tx);
       const receipt = await tx.wait();
-      console.log('Review Receipt:', receipt);
       // 3. Write to Firestore only if on-chain tx succeeds
       const createdAt = Date.now();
       await addRating({
