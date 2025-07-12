@@ -1,0 +1,75 @@
+FHEVM Relayer Initialization Guide
+==================================
+
+This guide explains how to initialize and use the FHEVM relayer in your codebase, with step-by-step instructions and code samples.
+
+---
+
+1. NPM PACKAGE METHOD (Recommended, as used in this project)
+-----------------------------------------------------------
+
+**Step 1: Install the SDK**
+- Run: `npm install @zama-fhe/relayer-sdk`
+
+**Step 2: Import and Initialize in your code**
+
+```ts
+import { initSDK, createInstance, SepoliaConfig } from "@zama-fhe/relayer-sdk/bundle";
+
+let fheInstance: any = null;
+
+// Call this once (e.g., on app load)
+export async function initializeFheInstance() {
+  // Loads the WASM module (from public/tfhe_bg.wasm by default)
+  await initSDK();
+  // Use SepoliaConfig and set network to window.ethereum (MetaMask)
+  const config = { ...SepoliaConfig, network: (window as any).ethereum };
+  fheInstance = await createInstance(config);
+  return fheInstance;
+}
+
+// Use this to get the instance elsewhere in your app
+export function getFheInstance() {
+  return fheInstance;
+}
+```
+
+**Step 3: Initialize on App Load**
+
+```ts
+// In your main App component (e.g., App.tsx)
+useEffect(() => {
+  const initAndFetch = async () => {
+    await initializeFheInstance();
+    // ... your logic after FHE is ready ...
+  };
+  initAndFetch();
+}, []);
+```
+
+**Step 4: Use the instance for encryption/decryption**
+- Use `getFheInstance()` to access the relayer instance for decryption, etc.
+
+---
+
+2. CDN SCRIPT METHOD (Alternative, not used in this project)
+------------------------------------------------------------
+
+**Step 1: Add the script to your HTML**
+
+```html
+<script src="https://unpkg.com/@zama-fhe/fhevm@latest/dist/fhevm.min.js"></script>
+```
+
+**Step 2: Use the global `window.fhevm` object**
+
+```js
+window.fhevm.someFunction();
+```
+
+---
+
+**Summary:**
+- For this project, use the NPM method and call `initializeFheInstance()` on app load.
+- Use `getFheInstance()` to access the relayer instance for FHE operations.
+- The CDN method is only needed if you are not using npm imports. 

@@ -38,7 +38,6 @@ function App() {
   const [ethBalance, setEthBalance] = useState<string>('');
   const [hasVoted, setHasVoted] = useState(false);
   // Add a flag to indicate relayer is down (since decryption is disabled)
-  const relayerDown = true;
   const [isFheReady, setIsFheReady] = useState(false);
   const [isCardsLoading, setIsCardsLoading] = useState(true);
 
@@ -278,11 +277,6 @@ function App() {
   return (
     <div className="min-h-screen transition-colors duration-300 bg-black">
       {/* Relayer down badge */}
-      {relayerDown && (
-        <div className="w-full bg-yellow-400 text-black text-center py-2 font-semibold shadow-md z-50">
-          Decryption relayer is down for maintenance. As soon as it comes up, ratings will be revealed.
-        </div>
-      )}
       <Header 
         onCreateCard={() => setIsCreateModalOpen(true)}
         totalCards={cards.length}
