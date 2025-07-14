@@ -5,9 +5,7 @@ let fheInstance: any = null;
 export async function initializeFheInstance() {
   await initSDK(); // Loads WASM from the default path (public/tfhe_bg.wasm or similar)
   const config = { ...SepoliaConfig, network: (window as any).ethereum };
-  console.log('FHE SDK config:', config);
   fheInstance = await createInstance(config);
-  console.log('FHE instance initialized:', fheInstance);
   return fheInstance;
 }
 
@@ -35,7 +33,6 @@ export async function decryptValue(encryptedBytes: string): Promise<number> {
     if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
       throw new Error('Decryption service is temporarily unavailable. Please try again later.');
     }
-    console.error('Error decrypting value:', error);
     throw error;
   }
 }
@@ -61,7 +58,6 @@ export async function getDecryptedStats(
 
     return { sum, count, average };
   } catch (error: any) {
-    console.error('Error getting decrypted stats:', error);
     // Return fallback values if decryption fails
     return { sum: 0, count: 0, average: 0 };
   }
@@ -77,12 +73,9 @@ export function formatAverageRating(average: number, totalReviews?: number): str
 // Debug function to test decryption
 export async function testDecryption(contract: any, cardId: number) {
   try {
-    console.log('Testing decryption for card:', cardId);
     const stats = await getDecryptedStats(cardId, contract);
-    console.log('Test decryption result:', stats);
     return stats;
   } catch (error) {
-    console.error('Test decryption failed:', error);
     throw error;
   }
 } 

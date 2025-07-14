@@ -1,0 +1,349 @@
+================================================================================
+                    FHE REVIEW CONTRACT IMPLEMENTATION GUIDE
+================================================================================
+
+This document contains the complete FHE (Fully Homomorphic Encryption) input 
+generation code and contract call implementation for the ReviewCardsFHE contract.
+
+================================================================================
+1. FHE INPUT GENERATION CODE
+================================================================================
+
+// File: src/utils/reviewContract.ts
+// Function: encryptReviewRating
+
+import { ethers } from 'ethers';
+import { hexlify } from 'ethers';
+import { getFheInstance } from './fheInstance';
+
+/**
+ * Encrypt a review rating (1-5) for the Review contract.
+ * @param rating number (1-5)
+ * @param contractAddress string
+ * @param userAddress string
+ */
+export async function encryptReviewRating(rating: number, contractAddress: string, userAddress: string) {
+  const fhe = getFheInstance();
+  if (!fhe) throw new Error('FHE instance not initialized');
+
+  // Convert contract address to checksum format
+  const contractAddressChecksum = ethers.getAddress(contractAddress);
+  console.log('FHE encryption params:', {
+    contractAddress,
+    contractAddressChecksum,
+    userAddress,
+    rating
+  });
+
+  // Create encrypted input for the review contract
+  const ciphertext = await fhe.createEncryptedInput(contractAddressChecksum, userAddress);
+  ciphertext.add64(rating); // Use add64 for 1-5 star ratings (64-bit)
+  const { handles, inputProof } = await ciphertext.encrypt();
+  const encryptedHex = hexlify(handles[0]);
+  const proofHex = hexlify(inputProof);
+
+  console.log('Encrypted review rating:', { encryptedHex, proofHex });
+  return { encryptedHex, proofHex };
+}
+
+================================================================================
+2. FHE INSTANCE INITIALIZATION
+================================================================================
+
+// File: src/utils/fheInstance.ts
+// Function: initializeFheInstance
+
+import { initSDK, createInstance, SepoliaConfig } from "@zama-fhe/relayer-sdk/bundle";
+
+let fheInstance: any = null;
+
+export async function initializeFheInstance() {
+  await initSDK(); // Loads WASM from the default path (public/tfhe_bg.wasm or similar)
+  const config = { ...SepoliaConfig, network: (window as any).ethereum };
+  console.log('FHE SDK config:', config);
+  fheInstance = await createInstance(config);
+  console.log('FHE instance initialized:', fheInstance);
+  return fheInstance;
+}
+
+export function getFheInstance() {
+  return fheInstance;
+}
+
+================================================================================
+3. CONTRACT CALL IMPLEMENTATION
+================================================================================
+
+// File: src/utils/reviewContract.ts
+// Function: submitEncryptedRatingOnChain
+
+import { ethers } from 'ethers';
+import { REVIEW_CONTRACT_ADDRESS, REVIEW_CONTRACT_ABI } from './constants';
+
+/**
+ * Submit an encrypted rating on-chain.
+ * @param signer ethers.Signer
+ * @param cardId string or number
+ * @param encryptedRating bytes32 or string
+ * @param proofHex bytes or string
+ * @returns transaction receipt
+ */
+export async function submitEncryptedRatingOnChain(signer: any, cardId: string | number, encryptedRating: string, proofHex: string) {
+  const contract = new ethers.Contract(REVIEW_CONTRACT_ADDRESS, REVIEW_CONTRACT_ABI, signer);
+  console.log('Submitting encrypted rating on-chain:', {
+    contractAddress: REVIEW_CONTRACT_ADDRESS,
+    cardId,
+    encryptedRating,
+    proofHex
+  });
+  const tx = await contract.submitEncryptedRating(cardId, encryptedRating, proofHex);
+  return await tx.wait();
+}
+
+================================================================================
+4. COMPLETE REVIEW SUBMISSION FLOW
+================================================================================
+
+// File: src/App.tsx
+// Function: handleSubmitReview
+
+const handleSubmitReview = async ({ rating }: { rating: number }) => {
+  if (!address || !selectedCard) return;
+  setIsReviewLoading(true);
+  setReviewStatus('encrypting');
+  
+  // Yield to event loop so UI updates before encryption
+  await new Promise(resolve => setTimeout(resolve, 0));
+  
+  try {
+    // 1. Encrypt the rating using FHE
+    const { encryptedHex, proofHex } = await encryptReviewRating(
+      rating, 
+      REVIEW_CONTRACT_ADDRESS, 
+      address
+    );
+    
+    setReviewStatus('reviewing');
+    
+    // 2. Submit encrypted rating on-chain
+    if (!window.ethereum) throw new Error('No wallet found');
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const contract = new ethers.Contract(REVIEW_CONTRACT_ADDRESS, REVIEW_CONTRACT_ABI, signer);
+    
+    const tx = await contract.submitEncryptedRating(
+      selectedCard.id, 
+      encryptedHex, 
+      proofHex, 
+      { gasLimit: 500000 }
+    );
+    const receipt = await tx.wait();
+    
+    // 3. Write to Firestore only if on-chain tx succeeds
+    const createdAt = Date.now();
+    await addRating({
+      cardId: selectedCard.id,
+      userId: address,
+      rating,
+      createdAt,
+    });
+    
+    setToast({ message: 'Rating submitted!', isVisible: true });
+    setIsReviewModalOpen(false);
+    setIsReviewLoading(false);
+    fetchCards();
+    
+  } catch (err: any) {
+    console.error('Review error:', err);
+    setToast({ message: 'Error submitting rating: ' + (err.message || err), isVisible: true });
+    setIsReviewLoading(false);
+  } finally {
+    setReviewStatus('idle');
+  }
+};
+
+================================================================================
+5. SMART CONTRACT FUNCTION SIGNATURE
+================================================================================
+
+// File: contract/ReviewCardsFHE.sol
+// Function: submitEncryptedRating
+
+function submitEncryptedRating(
+    uint256 cardId, 
+    externalEuint64 encryptedRating, 
+    bytes calldata inputProof
+) external {
+    require(reviewCards[cardId].exists, "Card does not exist");
+    require(!hasVoted[cardId][msg.sender], "Already voted on this card");
+
+    ReviewCard storage card = reviewCards[cardId];
+
+    // Import the encrypted rating using the proof
+    euint64 rating = FHE.fromExternal(encryptedRating, inputProof);
+
+    // Homomorphic addition: add encrypted rating to sum
+    card.encryptedSum = FHE.add(card.encryptedSum, rating);
+    FHE.allowThis(card.encryptedSum);
+    FHE.makePubliclyDecryptable(card.encryptedSum);
+
+    // Increment encrypted count
+    euint64 one = FHE.asEuint64(1);
+    card.encryptedCount = FHE.add(card.encryptedCount, one);
+    FHE.allowThis(card.encryptedCount);
+    FHE.makePubliclyDecryptable(card.encryptedCount);
+
+    // Mark this address as having voted
+    hasVoted[cardId][msg.sender] = true;
+
+    emit RatingSubmitted(cardId, msg.sender, block.timestamp);
+}
+
+================================================================================
+6. DECRYPTION IMPLEMENTATION
+================================================================================
+
+// File: src/utils/fheInstance.ts
+// Function: decryptValue
+
+export async function decryptValue(encryptedBytes: string): Promise<number> {
+  const fhe = getFheInstance();
+  if (!fhe) throw new Error('FHE instance not initialized. Call initializeFheInstance() first.');
+
+  try {
+    // Always pass an array of hex strings
+    let handle = encryptedBytes;
+    if (typeof handle === "string" && handle.startsWith("0x") && handle.length === 66) {
+      const values = await fhe.publicDecrypt([handle]);
+      // values is an object: { [handle]: value }
+      return Number(values[handle]);
+    } else {
+      throw new Error('Invalid ciphertext handle for decryption');
+    }
+  } catch (error: any) {
+    // Check for relayer/network error
+    if (error?.message?.includes('Failed to fetch') || error?.message?.includes('NetworkError')) {
+      throw new Error('Decryption service is temporarily unavailable. Please try again later.');
+    }
+    console.error('Error decrypting value:', error);
+    throw error;
+  }
+}
+
+// Function: getDecryptedStats
+export async function getDecryptedStats(
+  cardId: number, 
+  contract: any
+): Promise<{ sum: number; count: number; average: number }> {
+  try {
+    const fhe = getFheInstance();
+    if (!fhe) throw new Error('FHE instance not initialized. Call initializeFheInstance() first.');
+
+    // Get encrypted sum and count from the contract using getEncryptedStats
+    const { sum: encryptedSum, count: encryptedCount } = await contract.getEncryptedStats(cardId);
+
+    // Decrypt both values
+    const sum = await decryptValue(encryptedSum);
+    const count = await decryptValue(encryptedCount);
+
+    // Calculate average
+    const average = count > 0 ? sum / count : 0;
+
+    return { sum, count, average };
+  } catch (error: any) {
+    console.error('Error getting decrypted stats:', error);
+    // Return fallback values if decryption fails
+    return { sum: 0, count: 0, average: 0 };
+  }
+}
+
+================================================================================
+7. CONTRACT ABI FUNCTION SIGNATURE
+================================================================================
+
+// File: src/abi/ReviewCardsFHE.json
+// Function: submitEncryptedRating
+
+{
+  "inputs": [
+    {
+      "internalType": "uint256",
+      "name": "cardId",
+      "type": "uint256"
+    },
+    {
+      "internalType": "externalEuint64",
+      "name": "encryptedRating",
+      "type": "bytes32"
+    },
+    {
+      "internalType": "bytes",
+      "name": "inputProof",
+      "type": "bytes"
+    }
+  ],
+  "name": "submitEncryptedRating",
+  "outputs": [],
+  "stateMutability": "nonpayable",
+  "type": "function"
+}
+
+================================================================================
+8. USAGE EXAMPLE
+================================================================================
+
+// Complete example of how to use the FHE review system
+
+// 1. Initialize FHE instance
+await initializeFheInstance();
+
+// 2. Encrypt a rating
+const rating = 4; // 1-5 stars
+const contractAddress = "0x..."; // Your contract address
+const userAddress = "0x..."; // User's wallet address
+
+const { encryptedHex, proofHex } = await encryptReviewRating(
+  rating, 
+  contractAddress, 
+  userAddress
+);
+
+// 3. Submit to contract
+const signer = await provider.getSigner();
+const receipt = await submitEncryptedRatingOnChain(
+  signer, 
+  cardId, 
+  encryptedHex, 
+  proofHex
+);
+
+// 4. Decrypt aggregate results
+const contract = new ethers.Contract(contractAddress, abi, provider);
+const stats = await getDecryptedStats(cardId, contract);
+console.log('Average rating:', stats.average);
+
+================================================================================
+9. KEY FEATURES
+================================================================================
+
+1. PRIVACY: Individual ratings are never revealed, only aggregate statistics
+2. VERIFIABILITY: Zero-knowledge proofs ensure encrypted values are valid
+3. HOMOMORPHIC: Mathematical operations performed on encrypted data
+4. DOUBLE-VOTING PREVENTION: Smart contract prevents multiple votes per user
+5. PUBLIC DECRYPTABILITY: Aggregate results can be publicly decrypted
+6. GAS OPTIMIZATION: Efficient gas usage with proper limits
+
+================================================================================
+10. ERROR HANDLING
+================================================================================
+
+- FHE instance initialization failures
+- Network/relayer connectivity issues
+- Invalid encrypted input formats
+- Contract transaction failures
+- Decryption service unavailability
+- Wallet connection issues
+
+================================================================================
+END OF FHE REVIEW CONTRACT IMPLEMENTATION GUIDE
+================================================================================ 

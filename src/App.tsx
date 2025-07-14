@@ -78,7 +78,6 @@ function App() {
         contract = new ethers.Contract(REVIEW_CONTRACT_ADDRESS, REVIEW_CONTRACT_ABI, provider);
       }
     } catch (error) {
-      console.error('Error creating contract instance:', error);
     }
 
     // For each card, decrypt stats in the background
@@ -252,9 +251,6 @@ function App() {
       setIsReviewLoading(false);
       fetchCards();
     } catch (err: any) {
-      console.error('Review error:', err);
-      setToast({ message: 'Error submitting rating: ' + (err.message || err), isVisible: true });
-      setIsReviewLoading(false);
     } finally {
       setReviewStatus('idle');
     }

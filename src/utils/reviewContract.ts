@@ -20,12 +20,6 @@ export async function encryptReviewRating(rating: number, contractAddress: strin
 
   // Convert contract address to checksum format
   const contractAddressChecksum = ethers.getAddress(contractAddress);
-  console.log('FHE encryption params:', {
-    contractAddress,
-    contractAddressChecksum,
-    userAddress,
-    rating
-  });
 
   // Create encrypted input for the review contract
   const ciphertext = await fhe.createEncryptedInput(contractAddressChecksum, userAddress);
@@ -34,7 +28,6 @@ export async function encryptReviewRating(rating: number, contractAddress: strin
   const encryptedHex = hexlify(handles[0]);
   const proofHex = hexlify(inputProof);
 
-  console.log('Encrypted review rating:', { encryptedHex, proofHex });
   return { encryptedHex, proofHex };
 }
 
@@ -60,12 +53,6 @@ export async function createReviewCardOnChain(signer: any, creationFee: string) 
  */
 export async function submitEncryptedRatingOnChain(signer: any, cardId: string | number, encryptedRating: string, proofHex: string) {
   const contract = new ethers.Contract(REVIEW_CONTRACT_ADDRESS, REVIEW_CONTRACT_ABI, signer);
-  console.log('Submitting encrypted rating on-chain:', {
-    contractAddress: REVIEW_CONTRACT_ADDRESS,
-    cardId,
-    encryptedRating,
-    proofHex
-  });
   const tx = await contract.submitEncryptedRating(cardId, encryptedRating, proofHex);
   return await tx.wait();
 }

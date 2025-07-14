@@ -1,0 +1,63 @@
+================================================================================
+         FHE ENCRYPTED AGGREGATE DECRYPTION & AVERAGE CALCULATION EXAMPLE
+================================================================================
+
+This snippet demonstrates how to fetch encrypted sum and count ciphertexts from
+the ReviewCardsFHE contract, decrypt them on the client, and compute the average rating.
+
+================================================================================
+// File: src/utils/fheInstance.ts (or any client-side utility)
+// Requires: ethers.js, FHE instance initialized
+================================================================================
+
+import { ethers } from 'ethers';
+import { getFheInstance } from './fheInstance';
+
+/**
+ * Fetch encrypted stats from contract, decrypt, and compute average
+ * @param cardId number - The review card ID
+ * @param contract ethers.Contract - The ReviewCardsFHE contract instance
+ * @returns {Promise<{ sum: number, count: number, average: number }>}
+ */
+export async function getDecryptedStats(cardId, contract) {
+  const fhe = getFheInstance();
+  if (!fhe) throw new Error('FHE instance not initialized.');
+
+  // 1. Fetch encrypted sum and count from the contract
+  // getEncryptedStats returns { sum: bytes32, count: bytes32 }
+  const { sum: encryptedSum, count: encryptedCount } = await contract.getEncryptedStats(cardId);
+
+  // 2. Decrypt both ciphertexts using the FHE relayer
+  const sum = await fhe.publicDecrypt([encryptedSum]); // returns { [handle]: value }
+  const count = await fhe.publicDecrypt([encryptedCount]);
+
+  // 3. Extract the decrypted values
+  const sumValue = Number(sum[encryptedSum]);
+  const countValue = Number(count[encryptedCount]);
+
+  // 4. Compute the average (division)
+  const average = countValue > 0 ? sumValue / countValue : 0;
+
+  return { sum: sumValue, count: countValue, average };
+}
+
+// ===================== USAGE EXAMPLE =====================
+
+// Assume you have an ethers.js contract instance:
+// const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
+// const cardId = 0; // or any valid card ID
+
+const stats = await getDecryptedStats(cardId, contract);
+console.log('Decrypted sum:', stats.sum);
+console.log('Decrypted count:', stats.count);
+console.log('Average rating:', stats.average);
+
+================================================================================
+NOTES:
+- This code assumes the FHE relayer is running and the client is properly initialized.
+- The division is performed on the client after decryption, ensuring privacy of individual ratings.
+- Only aggregate values (sum, count, average) are revealed.
+
+================================================================================
+END OF FHE ENCRYPTED AGGREGATE DECRYPTION EXAMPLE
+================================================================================ 
