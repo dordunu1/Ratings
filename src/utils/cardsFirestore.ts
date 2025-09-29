@@ -3,11 +3,11 @@ import { app } from "./firebase";
 
 const db = getFirestore(app);
 
-export async function addCard(card: { id: string; createdAt: number; creator: string; title: string; description?: string }) {
+export async function addCard(card: { id: string; createdAt: number; creator: string; title: string; description?: string; kolName?: string; twitterHandle?: string; twitterAvatarUrl?: string; }) {
   await setDoc(doc(db, "cards", card.id), card);
 }
 
-export async function addCardWithRandomId(card: { title: string; description?: string; creator: string; createdAt: number; }) {
+export async function addCardWithRandomId(card: { title?: string; description?: string; creator: string; createdAt: number; kolName?: string; twitterHandle?: string; twitterAvatarUrl?: string; }) {
   // id field is initially empty
   return await addDoc(collection(db, "cards"), { ...card, id: '' });
 }

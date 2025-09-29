@@ -8,16 +8,27 @@ export interface Rating {
   rating: number;
   createdAt: number;
   cardId: string;
+  comment?: string;
 }
 
 // Add or update a rating (by cardId and userId)
-export async function addRating({ cardId, userId, rating, createdAt }: Rating): Promise<void> {
-  await setDoc(doc(db, "cards", cardId, "ratings", userId), {
+export async function addRating({ cardId, userId, rating, createdAt, comment }: Rating): Promise<void> {
+  // Validate inputs to prevent invalid document references
+  if (!cardId || cardId.trim() === '' || !userId || userId.trim() === '') {
+    throw new Error('Invalid cardId or userId provided');
+  }
+  const data: any = {
     userId,
     rating,
     createdAt,
     cardId,
-  });
+  };
+  if (typeof comment === 'string') {
+    const trimmed = comment.trim();
+    if (trimmed.length > 0) data.comment = trimmed;
+  }
+
+  await setDoc(doc(db, "cards", cardId, "ratings", userId), data);
   // Optionally increment the count in reviewCounts
   const countRef = doc(db, "reviewCounts", cardId);
   await updateDoc(countRef, { count: increment(1) }).catch(async () => {

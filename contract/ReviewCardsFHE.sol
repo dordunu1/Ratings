@@ -24,7 +24,7 @@ contract ReviewCardsFHE is SepoliaConfig {
 
     // Fee and owner
     address public owner;
-    uint256 public creationFee = 0.15 ether;
+    uint256 public creationFee = 0.005 ether;
 
     // Events
     event CardCreated(uint256 indexed cardId, address indexed creator, uint256 timestamp);

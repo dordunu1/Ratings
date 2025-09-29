@@ -1,3 +1,167 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Montserrat+Alternates:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import "tailwindcss";
+
+:root {
+  font-family: 'Montserrat Alternates', system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+/* Sepia color palette */
+:root {
+  --sepia-50: #FFF8E7;
+  --sepia-100: #FDECCB;
+  --sepia-200: #F8DEAC;
+  --sepia-300: #F2CF8E;
+  --sepia-400: #E8BF6B;
+  --sepia-500: #DFA54F;
+  --sepia-600: #C4843C;
+  --sepia-700: #9B642E;
+  --sepia-800: #734A22;
+  --sepia-900: #4D3116;
+  --text-primary-dark: #3B2F2F;
+  --text-secondary-dark: #5B4A3A;
+  --border-dark: #E9D8B4;
+  --text-secondary: #4A3F35;
+}
+
+/* Sticky-note utility styles */
+@layer components {
+  .sticky-note {
+    background-color: var(--sepia-50);
+    color: var(--text-primary-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: 18px;
+    box-shadow: 0 6px 0 0 #C4843C;
+    position: relative;
+    transform: rotate(-1deg);
+    transition: transform 0.2s ease;
+  }
+  .sticky-note:hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+  .sticky-note:nth-child(1) {
+    transform: rotate(-1deg);
+  }
+  .sticky-note:nth-child(2) {
+    transform: rotate(1deg);
+  }
+  .sticky-note:nth-child(3) {
+    transform: rotate(-0.5deg);
+  }
+  .sticky-note:nth-child(4) {
+    transform: rotate(0.8deg);
+  }
+  .sticky-note:nth-child(5) {
+    transform: rotate(-1.2deg);
+  }
+  .sticky-note:nth-child(6) {
+    transform: rotate(0.6deg);
+  }
+  .sticky-note:nth-child(7) {
+    transform: rotate(-0.8deg);
+  }
+  .sticky-note:nth-child(8) {
+    transform: rotate(1.1deg);
+  }
+  .sticky-note:nth-child(9) {
+    transform: rotate(-0.3deg);
+  }
+  .sticky-note:nth-child(10) {
+    transform: rotate(0.9deg);
+  }
+  .sticky-note:nth-child(1):hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+  .sticky-note:nth-child(2):hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+  .sticky-note:nth-child(3):hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+  .sticky-note:nth-child(4):hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+  .sticky-note:nth-child(5):hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+  .sticky-note:nth-child(6):hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+  .sticky-note:nth-child(7):hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+  .sticky-note:nth-child(8):hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+  .sticky-note:nth-child(9):hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+  .sticky-note:nth-child(10):hover {
+    transform: rotate(0deg) scale(1.02);
+  }
+  .sticky-note::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 22px,
+      rgba(0,0,0,0.04) 23px
+    );
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  .sticky-pin {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--sepia-400);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  /* Ensure all plain buttons get pointer cursor */
+  button {
+    cursor: pointer;
+  }
+
+  .sepia-input {
+    background-color: var(--sepia-100);
+    color: var(--text-primary-dark);
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .sepia-input::placeholder {
+    color: var(--text-secondary);
+  }
+  .sepia-input:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: var(--sepia-400);
+    border-color: var(--sepia-400);
+    cursor: text;
+  }
+
+  .sepia-button {
+    background-color: var(--sepia-300);
+    color: #3B2F2F;
+    font-weight: 600;
+    border: 1px solid var(--border-dark);
+    border-radius: 8px;
+    box-shadow: 0 3px 0 0 #C4843C;
+    padding: 8px 16px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .sepia-button:hover {
+    background-color: var(--sepia-400);
+  }
+  .sepia-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 0 0 #C4843C;
+  }
+}

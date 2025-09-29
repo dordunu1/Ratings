@@ -1,6 +1,6 @@
 export interface ReviewCard {
   id: string;
-  title: string;
+  title: string; // For backward compatibility; will mirror kolName
   description?: string;
   averageRating: number;
   totalReviews: number;
@@ -10,10 +10,16 @@ export interface ReviewCard {
   decryptionPending?: boolean; // Whether decryption is pending
   isDecrypting?: boolean;
   decryptionError?: boolean;
+  // KOL specific fields
+  kolName?: string;
+  twitterHandle?: string; // handle without @
+  twitterAvatarUrl?: string;
 }
 
 export interface CreateCardData {
-  title: string;
+  // Using kolName as the main title going forward
+  kolName: string;
+  twitterHandle: string;
   description?: string;
 }
 
@@ -27,4 +33,13 @@ export interface Review {
 
 export interface SubmitReviewData {
   rating: number;
+  comment?: string;
+}
+
+export interface CommentRecord {
+  id: string;
+  cardId: string;
+  userId: string;
+  text: string;
+  createdAt: number;
 }
