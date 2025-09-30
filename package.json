@@ -8,8 +8,10 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test:basic": "hardhat test test/ReviewCardsFHE_uint8.test.cjs --network hardhat",
     "test:fhe": "hardhat test test/RealFHE_Decryption.test.cjs --network hardhat",
-    "test:fhe:verbose": "hardhat test test/RealFHE_Decryption.test.cjs --network hardhat --verbose"
+    "test:fhe:verbose": "hardhat test test/RealFHE_Decryption.test.cjs --network hardhat --verbose",
+    "test:all": "hardhat test test/ReviewCardsFHE_uint8.test.cjs test/RealFHE_Decryption.test.cjs --network hardhat"
   },
   "dependencies": {
     "@fhevm/solidity": "^0.8.0",
@@ -49,6 +51,7 @@
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
+    "autoprefixer": "^10.4.21",
     "chai": "^4.5.0",
     "dotenv": "^16.6.0",
     "eslint": "^9.25.0",
