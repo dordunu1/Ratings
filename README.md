@@ -161,26 +161,83 @@ User Rating (1-5)
 
 ### Test Suite
 
-#### **RealFHE_Decryption.test.cjs** - Comprehensive FHE Testing
+We have **two comprehensive test files** covering different aspects:
+
+#### **1. ReviewCardsFHE_uint8.test.cjs** - Basic Functionality Tests
+Tests core contract functionality and business logic:
+
+```bash
+npm run test:basic
+```
+
+**What it tests (10 tests):**
+- ✅ Contract deployment and initialization
+- ✅ Card creation with fee validation
+- ✅ Double voting prevention
+- ✅ Fee withdrawal functionality
+- ✅ Multiple cards handling
+- ✅ Encrypted ratings tracking
+- ✅ Edge cases and performance
+- ✅ Contract state management
+
+#### **2. RealFHE_Decryption.test.cjs** - FHE Decryption Tests
 Tests actual FHE computations with decryption verification:
 
 ```bash
 npm run test:fhe
 ```
 
-**What it tests:**
+**What it tests (6 tests):**
 - ✅ Card creation with encrypted initialization
 - ✅ Rating submission with FHE operations
 - ✅ **Real decryption** of encrypted sums and counts
 - ✅ **Average calculation verification**
 - ✅ Different rating patterns (all 5s, mixed, single rating)
 - ✅ Edge cases and complex scenarios
-- ✅ Double voting prevention
-- ✅ Fee management
-- ✅ Contract state management
+
+#### **3. Run All Tests**
+Run both test suites together:
+
+```bash
+npm run test:all
+```
+
+**Total Coverage: 16 tests**
+- 10 basic functionality tests
+- 6 FHE decryption tests
+- Complete contract and FHE operation coverage
 - ✅ Performance testing
 
 **Sample Output:**
+
+**Basic Functionality Tests:**
+```
+ReviewCardsFHE - Basic Functionality Tests
+✅ Contract deployed at: 0x4a44ab6Ab4EC21C31fca2FC25B11614c9181e1DF
+    √ should deploy contract successfully
+✅ Initial values correct
+    √ should have correct initial values
+✅ Review card created successfully
+    √ should create a review card
+✅ Double voting prevention works
+    √ should prevent double voting
+✅ Creation fee validation works
+    √ should require correct creation fee amount
+✅ Fee withdrawal works
+    √ should allow owner to withdraw fees
+✅ Multiple cards handling works
+    √ should handle multiple cards
+✅ Encrypted ratings tracking works
+    √ should track encrypted ratings correctly (39ms)
+✅ Single rating handling works
+    √ should handle edge case: single rating
+✅ Performance test passed in 57ms
+    √ should handle performance: rapid sequential operations (58ms)
+
+10 passing (299ms)
+```
+
+**FHE Decryption Tests:**
 ```
 Real FHE Decryption Tests - Using Frontend Method
 Testing card creation and encrypted value initialization...
@@ -191,17 +248,17 @@ Testing card creation and encrypted value initialization...
 Testing FHE computations with actual decryption...
 ✅ FHE computations work correctly!
    Sum: 15, Count: 5, Average: 3
-    √ should submit ratings and verify FHE computations (106ms)
+    √ should submit ratings and verify FHE computations (89ms)
 
 Testing different rating patterns...
 ✅ All 5-star pattern works!
    Sum: 15, Count: 3, Average: 5
-    √ should test different rating patterns (59ms)
+    √ should test different rating patterns (58ms)
 
 Testing mixed rating patterns...
 ✅ Mixed rating pattern works!
    Sum: 15, Count: 5, Average: 3
-    √ should test mixed rating patterns (85ms)
+    √ should test mixed rating patterns (73ms)
 
 Testing single rating edge case...
 ✅ Single rating edge case works!
@@ -211,9 +268,17 @@ Testing single rating edge case...
 Testing complex rating scenarios...
 ✅ Complex rating scenario works!
    Sum: 15, Count: 5, Average: 3
-    √ should test complex rating scenarios (81ms)
+    √ should test complex rating scenarios (73ms)
 
-6 passing (458ms)
+6 passing (418ms)
+```
+
+**All Tests Combined:**
+```
+16 passing (691ms)
+- 10 basic functionality tests
+- 6 FHE decryption tests
+- Complete coverage of contract and FHE operations
 ```
 
 ## 🚀 Getting Started
