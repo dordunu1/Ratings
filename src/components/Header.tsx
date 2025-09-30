@@ -1,7 +1,7 @@
-import React from 'react';
-import { Shield, Plus } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Shield, Plus, ChevronDown, LogOut } from 'lucide-react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount } from 'wagmi';
+import { useAccount, useDisconnect } from 'wagmi';
 
 interface HeaderProps {
   onCreateCard: () => void;
@@ -9,7 +9,21 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onCreateCard, totalCards }) => {
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
+  const { disconnect } = useDisconnect();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   return (
     <header className="shadow-sm border-b transition-colors duration-300" style={{backgroundColor: 'var(--sepia-200)', borderColor: 'var(--border-dark)'}}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -27,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({ onCreateCard, totalCards }) => {
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-8">
             <ConnectButton.Custom>
               {({ account, chain, openConnectModal, authenticationStatus, mounted }) => {
                 const ready = mounted && authenticationStatus !== 'loading';
@@ -45,8 +59,35 @@ const Header: React.FC<HeaderProps> = ({ onCreateCard, totalCards }) => {
                     </button>
                   );
                 }
-                // Fallback to default ConnectButton for connected state
-                return <ConnectButton />;
+                // Custom connected state with dropdown
+                return (
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      onClick={() => setShowDropdown(!showDropdown)}
+                      className="sepia-button text-sm flex items-center space-x-2"
+                    >
+                      <span>{account.displayName}</span>
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                    {showDropdown && (
+                      <div className="absolute right-0 mt-2 w-48 rounded-lg shadow-lg z-50" style={{backgroundColor: 'var(--sepia-50)', border: '1px solid var(--border-dark)'}}>
+                        <div className="py-1">
+                          <button
+                            onClick={() => {
+                              disconnect();
+                              setShowDropdown(false);
+                            }}
+                            className="w-full px-4 py-2 text-sm flex items-center space-x-2 hover:bg-opacity-80 transition-colors"
+                            style={{color: 'var(--text-primary-dark)'}}
+                          >
+                            <LogOut className="w-4 h-4" />
+                            <span>Disconnect</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
               }}
             </ConnectButton.Custom>
             {isConnected && (

@@ -6,6 +6,7 @@ import CardGrid from './components/CardGrid';
 import CreateCardModal from './components/CreateCardModal';
 import ReviewModal from './components/ReviewModal';
 import CommentsModal from './components/CommentsModal';
+import WalletConnectionModal from './components/WalletConnectionModal';
 import Toast from './components/Toast';
 import { useTheme } from './hooks/useTheme';
 import { initializeFheInstance, decryptStatsWithDeadline } from './utils/fheInstance';
@@ -23,6 +24,7 @@ function App() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [commentsCardId, setCommentsCardId] = useState<string | null>(null);
   const [selectedCard, setSelectedCard] = useState<ReviewCard | null>(null);
   const [isCreateLoading, setIsCreateLoading] = useState(false);
@@ -64,6 +66,15 @@ function App() {
     (window as any).addEventListener('open-comments', handler);
     return () => (window as any).removeEventListener('open-comments', handler);
   }, []);
+
+  // Show wallet modal on app load if no wallet connected, close when connected
+  useEffect(() => {
+    if (!address) {
+      setIsWalletModalOpen(true);
+    } else {
+      setIsWalletModalOpen(false);
+    }
+  }, [address]);
 
   // Fetch cards on mount and after creation
   const fetchCards = async () => {
@@ -374,6 +385,10 @@ function App() {
           isOpen={isCommentsOpen}
           onClose={() => setIsCommentsOpen(false)}
           cardId={commentsCardId}
+        />
+        <WalletConnectionModal
+          isOpen={isWalletModalOpen}
+          onClose={() => setIsWalletModalOpen(false)}
         />
         <Toast
           message={toast.message}

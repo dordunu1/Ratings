@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: BSD-3-Clause-Clear
 pragma solidity ^0.8.24;
 
-import { FHE, euint64, externalEuint64 } from "@fhevm/solidity/lib/FHE.sol";
+import { FHE, euint8, externalEuint8 } from "@fhevm/solidity/lib/FHE.sol";
 import { SepoliaConfig } from "@fhevm/solidity/config/ZamaConfig.sol";
 
 contract ReviewCardsFHE is SepoliaConfig {
     // Struct to store a single review card
     struct ReviewCard {
         uint256 id;                  // Unique card ID
-        euint64 encryptedSum;        // Encrypted sum of all ratings
-        euint64 encryptedCount;      // Encrypted count of ratings submitted
+        euint8 encryptedSum;         // Encrypted sum of all ratings (1-5 range)
+        euint8 encryptedCount;       // Encrypted count of ratings submitted
         bool exists;                 // Check if card exists
         uint256 createdAt;           // Timestamp when card was created
         address creator;             // Address that created the card
@@ -63,10 +63,10 @@ contract ReviewCardsFHE is SepoliaConfig {
         ReviewCard storage card = reviewCards[cardId];
         
         card.id = cardId;
-        card.encryptedSum = FHE.asEuint64(0);
+        card.encryptedSum = FHE.asEuint8(0);
         FHE.allowThis(card.encryptedSum);
         FHE.makePubliclyDecryptable(card.encryptedSum);
-        card.encryptedCount = FHE.asEuint64(0);
+        card.encryptedCount = FHE.asEuint8(0);
         FHE.allowThis(card.encryptedCount);
         FHE.makePubliclyDecryptable(card.encryptedCount);
         card.exists = true;
@@ -77,14 +77,14 @@ contract ReviewCardsFHE is SepoliaConfig {
     }
 
     // Submit encrypted rating (1-5 stars)
-    function submitEncryptedRating(uint256 cardId, externalEuint64 encryptedRating, bytes calldata inputProof) external {
+    function submitEncryptedRating(uint256 cardId, externalEuint8 encryptedRating, bytes calldata inputProof) external {
         require(reviewCards[cardId].exists, "Card does not exist");
         require(!hasVoted[cardId][msg.sender], "Already voted on this card");
 
         ReviewCard storage card = reviewCards[cardId];
 
         // Import the encrypted rating using the proof
-        euint64 rating = FHE.fromExternal(encryptedRating, inputProof);
+        euint8 rating = FHE.fromExternal(encryptedRating, inputProof);
 
         // Homomorphic addition: add encrypted rating to sum
         card.encryptedSum = FHE.add(card.encryptedSum, rating);
@@ -92,7 +92,7 @@ contract ReviewCardsFHE is SepoliaConfig {
         FHE.makePubliclyDecryptable(card.encryptedSum);
 
         // Increment encrypted count
-        euint64 one = FHE.asEuint64(1);
+        euint8 one = FHE.asEuint8(1);
         card.encryptedCount = FHE.add(card.encryptedCount, one);
         FHE.allowThis(card.encryptedCount);
         FHE.makePubliclyDecryptable(card.encryptedCount);

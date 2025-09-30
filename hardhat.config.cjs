@@ -7,7 +7,7 @@ require("hardhat-deploy");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
 
-const MNEMONIC = process.env.MNEMONIC || "";
+const MNEMONIC = process.env.MNEMONIC || "play cement much paper mandate rubber marble ketchup over wonder critic survey";
 const INFURA_API_KEY = process.env.INFURA_API_KEY || "";
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
 
@@ -36,6 +36,7 @@ const config = {
       chainId: 11155111,
       url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
     },
+
   },
   paths: {
     artifacts: "./artifacts",
@@ -55,8 +56,8 @@ const config = {
     outDir: "types",
     target: "ethers-v6",
   },
-};
+};module.exports = config;
 
-module.exports = config;
+
 
 
