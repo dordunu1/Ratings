@@ -45,7 +45,7 @@ ReviewsMarket/
 
 ### User Journey Flow
 ```mermaid
-graph TB
+graph LR
     A[User Opens App] --> B{Wallet Connected?}
     B -->|No| C[Show Wallet Modal]
     B -->|Yes| D[Load Cards from Firestore]
