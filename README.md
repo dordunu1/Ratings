@@ -44,6 +44,8 @@ ReviewsMarket/
 ## 🔄 Rating Flow & Architecture
 
 ### User Journey Flow
+
+#### Phase 1: App Initialization
 ```mermaid
 graph LR
     A[User Opens App] --> B{Wallet Connected?}
@@ -51,29 +53,41 @@ graph LR
     B -->|Yes| D[Load Cards from Firestore]
     C --> E[Connect Wallet]
     E --> D
-    
     D --> F[Display Cards with Encrypted Stats]
-    F --> G[User Clicks Card]
-    G --> H[Show Review Modal]
-    
-    H --> I[User Submits Rating 1-5]
-    I --> J[Encrypt Rating with FHE]
-    J --> K[Submit to Smart Contract]
-    K --> L[Contract: FHE.add to encryptedSum]
-    L --> M[Contract: FHE.add to encryptedCount]
-    M --> N[Store in Firestore]
-    
-    N --> O[Frontend: Get Encrypted Stats]
-    O --> P[Request Decryption via Relayer]
-    P --> Q[Relayer: Decrypt Sum & Count]
-    Q --> R[Calculate Average: Sum/Count]
-    R --> S[Display Decrypted Average]
     
     style A fill:#e1f5fe
-    style J fill:#fff3e0
-    style K fill:#f3e5f5
-    style P fill:#e8f5e8
-    style S fill:#e1f5fe
+    style D fill:#e8f5e8
+    style F fill:#e1f5fe
+```
+
+#### Phase 2: Rating Submission
+```mermaid
+graph LR
+    A[User Clicks Card] --> B[Show Review Modal]
+    B --> C[User Submits Rating 1-5]
+    C --> D[Encrypt Rating with FHE]
+    D --> E[Submit to Smart Contract]
+    E --> F[Contract: FHE.add to encryptedSum]
+    F --> G[Contract: FHE.add to encryptedCount]
+    G --> H[Store in Firestore]
+    
+    style A fill:#e1f5fe
+    style D fill:#fff3e0
+    style E fill:#f3e5f5
+    style H fill:#e8f5e8
+```
+
+#### Phase 3: Display Results
+```mermaid
+graph LR
+    A[Frontend: Get Encrypted Stats] --> B[Request Decryption via Relayer]
+    B --> C[Relayer: Decrypt Sum & Count]
+    C --> D[Calculate Average: Sum/Count]
+    D --> E[Display Decrypted Average]
+    
+    style A fill:#e1f5fe
+    style B fill:#e8f5e8
+    style E fill:#e1f5fe
 ```
 
 ### System Architecture
