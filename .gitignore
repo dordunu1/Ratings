@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Hardhat artifacts and cache
+artifacts/
+cache/
+typechain-types/
+types/
+
+# FHEVM temp files
+fhevmTemp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
