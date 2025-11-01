@@ -7,9 +7,9 @@ require("hardhat-deploy");
 require("hardhat-gas-reporter");
 require("solidity-coverage");
 
-const MNEMONIC = process.env.MNEMONIC || "play cement much paper mandate rubber marble ketchup over wonder critic survey";
-const INFURA_API_KEY = process.env.INFURA_API_KEY || "";
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
+const MNEMONIC = process.env.MNEMONIC || "play cement much paper mandate rubber marble ketchup over fsfffc survey";
+const INFURA_API_KEY = process.env.INFURA_API_KEY || "34c3a5f3ecf54r3fe38b50f4";
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "DNXJA8RX2Q3VsfsP7Z68CJXQZSC6AW";
 
 /** @type {import('hardhat/config').HardhatUserConfig} */
 const config = {

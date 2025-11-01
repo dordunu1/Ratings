@@ -10,7 +10,7 @@ export async function initializeFheInstance() {
   // Load SDK from CDN (0.2.0 browser bundle)
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore - HTTP import resolved by browser, not TypeScript
-  const sdk: any = await import('https://cdn.zama.ai/relayer-sdk-js/0.2.0/relayer-sdk-js.js');
+  const sdk: any = await import('https://cdn.zama.org/relayer-sdk-js/0.2.0/relayer-sdk-js.js');
   const { initSDK, createInstance, SepoliaConfig } = sdk as any;
 
   await initSDK(); // Initializes the SDK with CDN-loaded WASM

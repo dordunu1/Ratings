@@ -4,11 +4,11 @@ async function main() {
   const [deployer] = await hre.ethers.getSigners();
   console.log('Deploying with account:', deployer.address);
 
-  const Contract = await hre.ethers.getContractFactory('ReviewCardsFHE');
+  const Contract = await hre.ethers.getContractFactory('ReviewCardsFHE_uint32');
   const contract = await Contract.deploy();
   await contract.waitForDeployment();
   const addr = await contract.getAddress();
-  console.log('ReviewCardsFHE deployed at:', addr);
+  console.log('ReviewCardsFHE_uint32 deployed at:', addr);
 }
 
 main().catch((error) => {
